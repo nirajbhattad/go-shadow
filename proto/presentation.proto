@@ -1,0 +1,1437 @@
+syntax = "proto3";
+
+package sling.cmw.presentation;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "./proto";
+
+service Presentation {
+  rpc GetTabs(TabQuery) returns (Tabs);
+  rpc GetScreen(PgQuery) returns (Screen);
+  rpc GetRibbon(PgQuery) returns (Ribbon);
+  rpc GetTile(PgQuery) returns (Tile);
+  rpc GetGrid(PgQuery) returns (Grid);
+  rpc GetChannelGuide(PgQuery) returns (ChannelGuide);
+  rpc GetChannelGuideRibbon(PgQuery) returns (Ribbon);
+  rpc GetChannelGuideTile(PgQuery) returns (Tile);
+  rpc GetGracenoteChannels(GracenoteChannelsQuery) returns (GracenoteChannelsResponse);
+  rpc ResolveDeeplink(DeepLinkQuery) returns (DeepLinkResponse);
+  rpc ResolveDeeplinks(DeepLinkListQuery) returns (DeepLinkListResponse);
+  rpc ResolveProgramDeeplinks(DeepLinkListQuery) returns (DeepLinkListResponse);
+  rpc LookupRecGuid(LookupRecGuidRequest) returns (LookupRecGuidResponse);
+  rpc LookupRuleGuid(LookupRuleGuidRequest) returns (LookupRuleGuidResponse);
+  rpc GetPlainChannelsList(ChannelQuery) returns (PlainChannelList);
+}
+
+service Drm {
+  rpc CheckDrm(CheckDrmRequest) returns (CheckDrmResponse);
+}
+
+service FeatureGroup {
+  rpc GetMembers(GetMembersQuery) returns (Members) {}
+  rpc AddMembers(ModifyMembersQuery) returns (Members) {}
+  rpc RemoveMembers(ModifyMembersQuery) returns (Members) {}
+}
+
+service Bookmark {
+  rpc GetBookmark(BookmarkRequest) returns (BookmarkResponse);
+}
+
+service DetailView {
+  rpc GetDetailView(DetailViewRequest) returns (DetailViewResponse);
+  rpc GetDetailContent(DetailContentQuery) returns (DetailContent);
+  rpc GetDetailActions(DetailActionsQuery) returns (DetailActions);
+  rpc GetDetailScreen(DetailScreenQuery) returns (DetailScreenResponse);
+  rpc GetDetailRibbons(DetailRibbonsQuery) returns (DetailRibbons);
+}
+
+message CheckDrmRequest {
+  string user_guid = 1;
+  string channel_guid = 2;
+  string asset_guid = 3;
+  string profile_guid = 4;
+}
+
+message CheckDrmResponse {
+  bool entitled = 1;
+}
+
+message LookupRecGuidRequest {
+  enum RecType {
+    BOTH = 0;
+    RS = 1;
+    LS = 2;
+  }
+  string user_guid = 1;
+  string rec_guid = 2;
+  RecType rec_type = 3;
+  string lsdvr_volume_id = 4;
+}
+
+message LookupRecGuidResponse {
+  string asset_guid = 1;
+}
+
+message LookupRuleGuidRequest {
+  enum RuleType {
+    BOTH = 0;
+    RS = 1;
+    LS = 2;
+  }
+  string user_guid = 1;
+  string rule_guid = 2;
+  RuleType rule_type = 3;
+  string lsdvr_volume_id = 4;
+}
+
+message LookupRuleGuidResponse {
+  string franchise_guid = 1;
+}
+
+message PgQuery {
+  RequestState req_state = 1;
+  string channel_id = 2;
+  google.protobuf.Timestamp time = 3;
+  int32 page = 4;
+  string page_size = 5;
+  string screen = 6;
+  string ribbon = 7;
+  string tile = 8;
+  bool mock_guid_source = 9;
+  string search_term = 10;
+  string sort = 11;
+  bool is_recent_search = 12;
+  bool vertical_scroll = 13;
+  string filter = 14;
+  map<string, string> query_params = 15;
+  bytes payload = 16;
+}
+
+message GracenoteChannelsQuery {
+  RequestState req_state = 1;
+}
+
+message GracenoteChannelsResponse {
+  repeated GracenoteChannel gracenote_channels = 1;
+}
+
+message GracenoteChannel {
+  string channel_guid = 1;
+  string gracenote_id = 2;
+  string deep_link = 3;
+}
+
+message TabQuery {
+  RequestState req_state = 1;
+  string tab_id = 2;
+  map<string, string> query_params = 3;
+}
+
+message DeepLinkQuery {
+  RequestState req_state = 1;
+  string type = 2;
+  string identifier = 3;
+  string action = 4;
+  int32 start_ms = 5;
+  string tracking_id = 6;
+  google.protobuf.StringValue watch_party_host_key = 7;
+  string source = 8;
+  string link_context = 9;
+}
+
+message DeepLinkListQuery {
+  enum TileType {
+    TILE_TYPE_PROGRAM = 0;
+    TILE_TYPE_ASSET = 1;
+  }
+  RequestState req_state = 1;
+  repeated DeeplinkElementQuery queries = 2;
+  string source = 3;
+  TileType tile_type = 4;
+}
+
+message DeeplinkElementQuery {
+  string identifier = 1;
+  string tracking_id = 2;
+}
+
+message DeepLinkListResponse {
+  map<string, DeepLinkResponse> deeplinks = 1;
+}
+
+enum DetailScreenType {
+  DETAIL_CHANNEL = 0;
+  DETAIL_OFFERING = 1;
+  DETAIL_SERIES = 2;
+}
+
+message DetailContentQuery {
+  RequestState req_state = 1;
+  DetailScreenType type = 2;
+  string id = 3;
+  string programId = 4;
+}
+
+message DetailContent {
+  enum DetailContentType {
+    TILE = 0;
+    RIBBON = 1;
+  }
+  DetailContentType type = 1;
+  Tile active_tile = 2;
+  Ribbon ribbon = 3;
+  google.protobuf.Timestamp expires_at = 4;
+  repeated string invalidation_keys = 5;
+}
+
+message DetailActionsQuery {
+  RequestState req_state = 1;
+  DetailScreenType type = 2;
+  string id = 3;
+}
+message ChannelQuery {
+  RequestState req_state = 1;
+}
+message DetailActions {
+  enum DetailActionsType {
+    CHANNEL = 0;
+    STANDARD = 1;
+  }
+  DetailActionsType type = 1;
+  map<string, Action> actions = 2;
+  repeated Action.Type action_sequence = 3;
+  repeated string invalidation_keys = 4;
+}
+
+message DeepLinkResponse {
+  map<string, Action> actions = 1;
+  ActionTypeValue primary_action = 2;
+  string tracking_id = 4;
+  bool is_parental_locked = 5;
+  Image image = 6;
+  repeated Error errors = 7;
+  string title = 8;
+  ActionTypeValue secondary_action = 9;
+  string channel_guid = 10;
+}
+
+message RecentSearch {
+  string term = 1;
+  map<string, Action> actions = 2;
+  ActionTypeValue primary_action = 3;
+}
+
+message RecentSearches {
+  string title = 1;
+  repeated RecentSearch searches = 2;
+}
+
+message Screen {
+  enum Format {
+    STACKED = 0;
+    TABBED = 1;
+    SEARCH = 2;
+    MANAGE_HISTORY = 3;
+    GRID_GUIDE = 4;
+    CHANNEL_GUIDE = 5;
+    MANAGE_FAVORITE_CHANNELS = 6;
+    DVR = 7;
+    LSDVR_SETTINGS = 8;
+    RSDVR_SETTINGS = 9;
+    PROMOTION = 10;
+    GUIDE = 11;
+    MINI_GUIDE_CHANNELS = 12;
+    LG_LAUNCHER = 13;
+  }
+  repeated Ribbon ribbons = 1;
+  string title = 2;
+  bool hide_ribbon_titles = 3;
+  bool vertical_scroll = 4;
+  Format format = 5;
+  repeated Error errors = 6;
+  map<string, ScreenAction> actions = 7;
+  RecentSearches recent_searches = 8;
+  Banner banner = 9;
+  repeated Channel channels = 10;
+  Grid grid = 11;
+  repeated GridGuideAction grid_sort_actions = 12;
+  repeated GridGuideAction grid_filter_actions = 13;
+  string language_prompt = 14;
+  google.protobuf.Int32Value next_page = 15;
+  google.protobuf.Int32Value prev_page = 16;
+  ChannelGuide channel_guide = 17;
+  repeated GridGuideAction channel_guide_sort_actions = 18;
+  repeated GridGuideAction channel_guide_filter_actions = 19;
+  Image background_image = 20;
+  RecordingStatus rec_status = 21;
+  DvrStatus dvr_status = 22;
+  SubscriptionInfo subscription_info = 23;
+  DeviceInfo device_info = 24;
+  LsdvrVolumeState dvr_state_info = 25;
+  google.protobuf.StringValue heading = 26;
+  repeated AttributeList stacked_attribute_list = 27;
+  repeated GridGuideAction r20_guide_actions = 28;
+  repeated GuideFilter guide_filters = 29;
+  map<string, string> query_params = 30;
+  google.protobuf.Timestamp expires_at = 31;
+  google.protobuf.Int32Value horizontal_next_page = 32;
+  google.protobuf.Int32Value horizontal_prev_page = 33;
+  google.protobuf.Int32Value vertical_next_page = 34;
+  google.protobuf.Int32Value vertical_prev_page = 35;
+  google.protobuf.Timestamp start_time = 36;
+  google.protobuf.Timestamp end_time = 37;
+  repeated Ribbon special_ribbons = 38;
+  repeated SpecialHrefList special_hrefs = 39;
+  int32 total_vertical_pages = 40;
+  Adobe adobe = 41;
+  int32 skip_interval = 42;
+}
+
+message AttributeList {
+  repeated Attribute attribute_list = 1;
+}
+
+message Tabs {
+  string href = 1;
+  repeated Tab user_tabs = 2;
+  int64 focused_tab = 3;
+  string invalidation_key = 4;
+}
+
+message Tab {
+  enum Format {
+    TAB = 0;
+    SUB_TAB = 1;
+    PROFILE_TAB = 2;
+    COMPOSITE_TAB = 3;
+  }
+  string id = 1;
+  string title = 2;
+  ActionTypeValue primary_action = 3;
+  map<string, Action> actions = 4;
+  Format format = 5;
+  enum State {
+    DISABLED = 0;
+    ENABLED = 1;
+  }
+  State state = 6;
+  ActionTypeValue focus_action = 7;
+  ActionTypeValue persist_action = 8;
+  string overlay_title = 9;
+  string bg_color = 10;
+  string profile_guid = 11;
+}
+
+message Banner {
+  string id = 1;
+  map<string, Action> actions = 2;
+  string primary_action = 3;
+  repeated Action.Type action_sequence = 4;
+  repeated string description_list = 5;
+  Image image = 6;
+  string subtitle = 7;
+  string title = 8;
+}
+
+message DetailRibbonsQuery {
+  RequestState req_state = 1;
+  DetailScreenType type = 2;
+  string id = 3;
+  string season_id = 4; // Useful when requesting a specific season for a series
+}
+
+message Ribbon {
+  enum Format {
+    RIBBON = 0;
+    GRID = 1;
+    MY_CHANNELS = 2;
+    SPOTLIGHT_STANDARD = 3;
+    SPOTLIGHT_MIRRORED = 4;
+    SEASON = 5;
+    VERTICAL = 6;
+    SPOTLIGHT = 7;
+    VERTICAL_CLOSABLE = 8;
+    GRID_GUIDE_VERTICAL_CHANNELS = 9;
+    GRID_GUIDE_SCHEDULE = 10;
+    MARQUEE = 11;
+    MINI_GUIDE_VERTICAL_CHANNELS = 12;
+    MINI_VERTICAL_CHANNEL_SCHEDULE = 13;
+    PLAIN_CHANNELS = 14;
+    LG_LAUNCHER = 15;
+  }
+  string title = 1;
+  repeated Tile tiles = 2;
+  google.protobuf.Timestamp expires_at = 3;
+  int32 num_pages = 4;
+  int32 total_tiles = 5;
+  int32 current_page = 6; //0 indexed
+  google.protobuf.Int32Value next_page = 7;
+  google.protobuf.Int32Value prev_page = 8;
+  string ID = 9;
+  Format format = 10;
+  bool hide_ribbon_titles = 11;
+  bool vertical_scroll = 12;
+  repeated Error errors = 13;
+  string invalidation_key = 14;
+  Label label = 15;
+  repeated Action seasons = 16;
+  EmptyInfo empty_info = 17;
+  map<string, string> query_params = 18;
+  google.protobuf.StringValue stitch_id = 19;
+}
+message PlainChannelList {
+  string Format = 1;
+  repeated PlainChannelTile tiles = 2;
+}
+message PlainChannelTile {
+  string channel_title = 1;
+  string channel_guid = 2;
+  string searchable_title = 3;
+}
+message DetailRibbons {
+  string id = 1;
+  string season_id = 2;
+  repeated RibbonOrLoadable ribbons = 3;
+}
+
+message RibbonOrLoadable {
+  enum Type {
+    RIBBON = 0;
+    LOADABLE = 1;
+  }
+  Type type = 1;
+  Ribbon ribbon = 2;
+  LoadableRibbon loadable_ribbon = 3;
+}
+
+message LoadableRibbon {
+  string href = 1;
+  string title = 2;
+}
+
+message ChannelGuide {
+  string id = 1;
+  string title = 2;
+  string href = 3;
+  Image image = 4;
+  string secondary_hint = 5;
+  string description = 6;
+  repeated Ribbon ribbons = 7;
+  map<string, Action> actions = 8;
+  google.protobuf.StringValue primary_action = 9;
+  google.protobuf.StringValue secondary_action = 10;
+  Icon favorited_icon = 12;
+  string invalidation_key = 13;
+}
+
+message Channel {
+  string id = 1;
+  string title = 2;
+  Image image = 3;
+  int32 channel_number = 4;
+  string network_affiliate_name = 5;
+}
+
+message Grid {
+  map<string, GridRow> schedules = 1;
+  Bar bar = 2;
+  string DayStatus = 3;
+  string channel_id = 4;
+  google.protobuf.Timestamp prev_time = 5;
+  google.protobuf.Timestamp next_time = 6;
+  string prev_channel = 7;
+  string next_channel = 8;
+  google.protobuf.Timestamp expires_at = 9;
+  google.protobuf.Timestamp start_time = 10;
+  google.protobuf.Timestamp end_time = 11;
+  map<string, string> query_params = 12;
+}
+
+message GridRow {
+  Tile channel = 1;
+  repeated Tile schedule = 2;
+}
+
+message GridGuideAction {
+  string title = 1;
+  string http_method = 2;
+  string url = 3;
+  bytes json_payload = 4;
+  bool enabled = 5;
+  Adobe adobe = 6;
+  string sort_id = 7;
+  string filter_id = 8;
+  google.protobuf.StringValue screen_id = 9;
+}
+
+message GuideFilter {
+  string title = 1;
+  bool is_active = 2;
+  GridGuideAction get_grid = 3;
+  GridGuideAction persist_filter = 4;
+}
+
+message Tile {
+  enum Format {
+    STANDARD = 0;
+    MICRO_GUIDE = 1;
+    BUTTON = 2;
+    STANDARD_V4 = 3;
+    MICRO_GUIDE_V4 = 4;
+    RELOAD = 5;
+    GRID_GUIDE_V4 = 6;
+    GRID_GUIDE_CHANNEL_V4 = 7;
+    SPOTLIGHT = 8;
+    SPOTLIGHT_V4 = 9;
+    CHANNEL = 10;
+    VERTICAL = 11;
+    CIRCULAR = 12;
+    EXTRA_LARGE = 13;
+    GRADIENT_ELONGATED = 14;
+    LARGE = 15;
+    MEDIUM = 16;
+    SMALL = 17;
+    GRID_R20_CHANNEL = 18;
+    GRID_R20_PROGRAM = 19;
+    GRID_GUIDE_CHANNEL = 20;
+    GRID_GUIDE_PROGRAM = 21;
+    TEXT = 22;
+    ANDROID_LAUNCHER = 23;
+    SAMSUNG_LAUNCHER = 24;
+    APPLE_LAUNCHER = 25;
+    GAME_CARD = 26;
+    MINI_GUIDE_CHANNEL = 27;
+    BANNER = 28;
+    MINI_GUIDE_CHANNEL_PROGRAM = 29;
+    LG_LAUNCHER = 30;
+  }
+  Format format = 1;
+  Image image = 2;
+  string title = 3;
+  repeated Attribute attributes = 4;
+  Attribute upcoming_content = 5;
+  google.protobuf.StringValue description = 6;
+  Bar bar = 7;
+  map<string, Action> actions = 8;
+  ActionTypeValue primary_action = 9;
+  ActionTypeValue secondary_action = 10;
+  Icon parental_icon = 11;
+  Icon favorited_icon = 12;
+  Icon recording_icon = 13;
+  Analytics analytics = 14;
+  repeated string invalidation_keys = 15;
+  string legacy_type = 16;
+  string id = 17;
+  string channel_name = 18;
+  repeated Error errors = 19;
+  repeated string genres = 20;
+  repeated string cast = 21;
+  Image background_image = 22;
+  string unentitled_message = 23;
+  google.protobuf.BoolValue on_now = 24;
+  google.protobuf.BoolValue is_in_future = 25;
+  google.protobuf.BoolValue purchase_required = 26;
+  google.protobuf.BoolValue is_new = 27;
+  string subtitle = 28;
+  Image secondary_image = 29;
+  google.protobuf.BoolValue is_onboarding = 30;
+  string secondary_hint = 31;
+  google.protobuf.Duration grid_duration = 32;
+  Thuuz thuuz = 33;
+  google.protobuf.Timestamp start_time = 34;
+  Image channel_logo = 35;
+  string source = 36;
+  repeated Badge badges = 37;
+  ChannelLogoDetails channel_logo_details = 38;
+  google.protobuf.StringValue overlay_title = 39;
+  repeated ActionTypeValue focus_action_sequence = 40;
+  map<string, Action> focus_actions = 41;
+  Icon focus_play_icon = 42;
+  repeated Attribute focus_attributes = 43;
+  Image focus_image = 44;
+  google.protobuf.StringValue focus_overlay_title = 45;
+  google.protobuf.StringValue bg_color = 46;
+  ActionTypeValue focus_action = 47;
+  ChannelLogoDetails focus_channel_logo_details = 48;
+  repeated Attribute focus_overlay_attributes = 49;
+  FocusActionHint focus_action_hint = 50;
+  repeated Attribute focus_row_attributes = 51;
+  google.protobuf.StringValue focus_row_backround_color = 52;
+  google.protobuf.StringValue focus_row_description = 53;
+  repeated Attribute focus_row_duration_attributes = 54;
+  google.protobuf.Timestamp stop_time = 55;
+  google.protobuf.StringValue stitch_id = 58;
+  google.protobuf.BoolValue should_focus = 59;
+  repeated Badge future_badges = 60;
+  repeated Attribute future_focus_row_duration_attributes = 61;
+  FocusActionHint future_focus_action_hint = 62;
+  ActionTypeValue future_primary_action = 63;
+  ActionTypeValue future_secondary_action = 64;
+  repeated Badge on_now_badges = 65;
+  repeated Attribute on_now_focus_row_duration_attributes = 66;
+  FocusActionHint on_now_focus_action_hint = 67;
+  ActionTypeValue on_now_primary_action = 68;
+  ActionTypeValue on_now_secondary_action = 69;
+  repeated Badge past_badges = 70;
+  repeated Attribute past_focus_row_duration_attributes = 71;
+  FocusActionHint past_focus_action_hint = 72;
+  ActionTypeValue past_primary_action = 73;
+  ActionTypeValue past_secondary_action = 74;
+  map<string, string> query_params = 75;
+  SourceTypeDetails source_type_details = 76; // contains details specific to source type(source could be channel, or any other type)
+  repeated Attribute overlay_attributes = 77;
+  repeated Attribute explanation_attributes = 78;
+  repeated ActionTypeValue overlay_action_sequence = 79;
+  repeated ActionTypeValue action_sequence = 80;
+  repeated ActionTypeValue focus_overlay_action_sequence = 81;
+  google.protobuf.StringValue overlay_centre_title = 82;
+  repeated Attribute overlay_explanation_attributes = 83;
+  Icon overlay_play_icon = 84;
+  repeated ActionTypeValue future_focus_overlay_action_sequence = 85;
+  repeated ActionTypeValue on_now_focus_overlay_action_sequence = 86;
+  repeated ActionTypeValue past_focus_overlay_action_sequence = 87;
+  repeated Attribute future_focus_duration_attributes = 88;
+  repeated Attribute on_now_focus_duration_attributes = 89;
+  repeated Attribute past_focus_duration_attributes = 90;
+  repeated Indicator focus_indicators = 91;
+  repeated Indicator overlay_indicators = 92;
+  ActionTypeValue more_actions = 93;
+  repeated Attribute future_duration_attributes = 94;
+  repeated Attribute on_now_duration_attributes = 95;
+  repeated Attribute past_duration_attributes = 96;
+  bool populate_tile_id = 97;
+  ActionTypeValue post_payment_action = 98;
+  google.protobuf.StringValue asset_guid = 99;
+  google.protobuf.StringValue franchise_guid = 100;
+  google.protobuf.FloatValue watch_percent = 101;
+  repeated string ratings_list = 102;
+  google.protobuf.StringValue deeplink = 103;
+  google.protobuf.Duration duration = 104;
+  google.protobuf.StringValue is_playable = 105;
+  google.protobuf.StringValue action_data = 106;
+  google.protobuf.StringValue image_url = 107;
+  google.protobuf.Timestamp ttl = 108;
+  google.protobuf.StringValue marquee_title = 109;
+  google.protobuf.StringValue marquee_description = 110;
+  repeated Attribute marquee_attributes = 111;
+  Image marquee_image = 112;
+  google.protobuf.Int32Value episode_number = 113;
+  google.protobuf.Int32Value season_number = 114;
+  google.protobuf.Timestamp resume_updated_at = 115;
+  google.protobuf.StringValue resume_type = 116;
+  repeated Badge source_badges = 117;
+  string source_text = 118;
+  google.protobuf.StringValue watch_deeplink = 119;
+  google.protobuf.StringValue browse_deeplink = 120;
+  SportsScoresData sports_scores = 121;
+  google.protobuf.StringValue overlay_description = 122;
+  AutoPlay autoplay = 123;
+  string program_id = 124;
+  google.protobuf.Duration watched_duration = 125;
+}
+
+message AutoPlay {
+  int32 PreviewTimeSec = 1;
+  bool EnableAutoPlay = 2;
+}
+
+message Indicator {
+  Icon icon = 1;
+  map<string, Action> actions = 2;
+  ActionTypeValue click_action = 3;
+}
+
+message DetailViewResponse {
+  enum Format {
+    STANDARD_V4 = 0;
+  }
+  Format format = 1;
+  Tile core_properties = 2; // These are not present in DetailScreen on the api
+  string watch_expiration = 3; // This indicates to the user the time they have left to watch a rental.
+  repeated DetailWidget widgets = 4;
+  bool is_purchase_locked = 5; // Need pin to continue
+  bool is_parental_locked = 6; // Need pin to continue
+  repeated string invalidation_keys = 7;
+}
+
+message DetailScreenResponse {
+  DetailActions actions_view = 1;
+  repeated Attribute attributes = 2;
+  Image background_image = 3;
+  Image channel_logo = 4;
+  DetailContent content_view = 5;
+  string description = 6;
+  string long_description = 7;
+  repeated NamedAttribute named_attributes = 8;
+  DetailRibbons ribbons_view = 9;
+  string title = 10;
+}
+
+message NamedAttribute {
+  string name = 1;
+  repeated string value = 2;
+}
+
+message DetailWidget {
+  ActionTypeValue action_key = 1;
+  string display_text = 2;
+  Icon icon = 3;
+}
+
+message Error {
+  int32 code = 1;
+  int32 sub_code = 2;
+  string details = 3;
+}
+
+message Image {
+  string url = 1;
+  int32 width = 2;
+  int32 height = 3;
+}
+
+message Attribute {
+  enum Type {
+    STRING = 0;
+    TIME = 1;
+    DURATION = 2;
+    COUNTDOWN = 3;
+    ICON = 4;
+  }
+  Type type = 1;
+  Icon icon = 2;
+  bool is_featured = 3;
+  string str_value = 4;
+  google.protobuf.Timestamp time_value = 5;
+  google.protobuf.Duration dur_value = 6;
+}
+
+message Bar {
+  enum Type {
+    STATIC = 0;
+    DYNAMIC = 1;
+  }
+  Type type = 1;
+  google.protobuf.Timestamp scheduled_start_time = 2;
+  google.protobuf.Timestamp scheduled_stop_time = 3;
+  float start_percent = 4;
+  google.protobuf.FloatValue stop_percent = 5;
+}
+
+message ScreenAction {
+  enum Type {
+    DELETE_SEARCH_HISTORY = 0;
+    ADD_TO_SEARCH_HISTORY = 1;
+    DELETE_ALL = 2;
+    SORT_LAST_WATCHED = 3;
+    SORT_ALPHABETICAL = 4;
+    EJECT_HARD_DRIVE = 5;
+    BASE_PACK_SELECTION_IVIEW = 6;
+    PRESENTABLE_ERROR = 7;
+  }
+  google.protobuf.StringValue id = 1;
+  google.protobuf.StringValue url = 2;
+  google.protobuf.StringValue http_method = 3;
+  bytes json_payload = 4;
+  google.protobuf.StringValue title = 5;
+  google.protobuf.BoolValue enabled = 6;
+  Adobe adobe = 7;
+  google.protobuf.StringValue label = 8;
+  OTARecordingInfo ota_recording_info = 9;
+}
+
+message Action {
+  enum Type {
+    ASSET_IVIEW = 0;
+    FRANCHISE_IVIEW = 1;
+    PLAY_CONTENT = 2;
+    CHANNEL_GUIDE_VIEW = 3;
+    MANAGE_RESUMES = 4;
+    MANAGE_FAVORITE_CHANNELS = 5;
+    VIEW_MORE = 6;
+    ASSET_RECORDING_IVIEW = 7;
+    FRANCHISE_RECORDING_IVIEW = 8;
+    MANAGE_RECORDINGS = 9;
+    SUBPACK_IVIEW = 10;
+    UNENTITLED_CONTENT_IVIEW = 11;
+    RELOAD = 12;
+    PERFORM_RECENT_SEARCH = 13;
+    DELETE_PROGRESS_POINT = 14;
+    MANAGE_HISTORY = 15;
+    SIGN_UP = 16;
+    FAVORITE = 17;
+    UNFAVORITE = 18;
+    RECORD_THIS = 19;
+    RECORD_ALL = 20;
+    RECORD_NEW = 21;
+    RESTART_SUBSCRIPTION = 22;
+    PACK_SWITCH_IVIEW = 23;
+    WATCH_PASS_IVIEW = 24;
+    FAVORITE_WITH_INVALIDATION = 25;
+    UNFAVORITE_WITH_INVALIDATION = 26;
+    MANAGE_FAVORITE_CHANNELS_PAGE = 27;
+    GET_SCREEN = 28;
+    GET_CLIENT_SCREEN = 29;
+    CLIENT_RENT_4K = 30;
+    CLIENT_RENT_HD = 31;
+    CLIENT_RENT_SD = 32;
+    PLAY_TRAILER = 33;
+    RECORD_OPTIONS_SCREEN = 34;
+    CANCEL_RECORDING = 35;
+    DETAIL_VIEW = 36;
+    GET_SUB_TAB = 37;
+    EXPAND = 38;
+    RECORD_PROTECT = 39;
+    RECORD_UNPROTECT = 40;
+    DELETE_RECORDING = 41;
+    RESTORE_RECORDING = 42;
+    CANCEL_RECORDINGS = 43;
+    DELETE_RECORDINGS = 44;
+    RESTORE_RECORDINGS = 45;
+    OTA_RECORD_THIS = 46;
+    OTA_RECORD_ALL = 47;
+    OTA_RECORD_NEW = 48;
+    OTA_DELETE_RECORDING = 49;
+    OTA_RESTORE_RECORDING = 50;
+    OTA_CANCEL_RECORDING = 51;
+    OTA_CANCEL_RECORDINGS = 52;
+    OTA_DELETE_RECORDINGS = 53;
+    OTA_RESTORE_RECORDINGS = 54;
+    OTA_RECORD_PROTECT = 55;
+    OTA_RECORD_UNPROTECT = 56;
+    PLAYER_SCREEN = 57;
+    NO_OP = 58;
+    PLAY_AIRING = 59;
+    PLAY_DVR = 60;
+    PLAYBACK_OPTIONS_SCREEN = 61;
+    GET_TAB_FOCUS_RIBBON = 62;
+    WATCH_PARTY = 63;
+    MORE_ACTIONS_SCREEN = 64;
+    CHANNEL_VIEW = 65;
+    PERSIST_TAB = 66;
+    VALIDATE_PARENTAL_PIN = 67;
+    HUB_VIEW = 68;
+    GET_FULL_SCREEN = 69;
+    GET_HALF_SCREEN = 70;
+    FETCH_CHANNELS_MINI_GUIDE = 71;
+    PLAY_CHANNEL = 72;
+    SIGN_UP_OR_SIGN_IN_FOR_FAV = 73;
+  }
+  google.protobuf.StringValue label = 1;
+  Icon icon = 2;
+  google.protobuf.StringValue id = 3;
+  google.protobuf.StringValue href = 4;
+  google.protobuf.StringValue http_method = 5;
+  PlaybackInfo playback_info = 6;
+  bytes json_payload = 7;
+  google.protobuf.StringValue title = 8;
+  Image image = 9;
+  Adobe adobe = 10;
+  repeated string subpack_guids = 11;
+  PackSwitchData pack_switch_data = 12;
+  google.protobuf.StringValue href_iview = 13;
+  google.protobuf.StringValue iview_type = 14;
+  string subpack_guid = 15;
+  repeated Type record_action_sequence = 16;
+  map<string, Action> record_actions = 17;
+  google.protobuf.StringValue expand_route = 18;
+  Action.Type selected_action = 19;
+  OTARecordingInfo ota_recording_info = 20;
+  RecordOptionsScreen record_options_screen = 21;
+  Action player_screen_action = 22;
+  ToastInfo toast_info = 23;
+  PlaybackOptionsScreen playback_options_screen = 24;
+  MoreActionsScreen more_actions_screen = 25;
+  map<string, Action> pre_actions = 26;
+  repeated ActionTypeValue pre_action_keys = 27;
+  google.protobuf.StringValue channel_guid = 28;
+  google.protobuf.StringValue asset_type = 29;
+  google.protobuf.BoolValue is_live_event = 30;
+}
+
+message ActionTypeValue {
+  Action.Type value = 1;
+}
+
+message PackSwitchData {
+  enum TargetPackColor {
+    ORANGE = 0;
+    BLUE = 1;
+  }
+  TargetPackColor color = 1;
+  string original_name = 2;
+  string new_name = 3;
+  string pack_guid = 4;
+  string cms_lookup = 5;
+  bool content_based = 6;
+  string content_title = 7;
+  Image content_image = 8;
+}
+
+message PlaybackInfo {
+  enum Type {
+    OTT = 0;
+    OTA = 1;
+    LSDVR = 2;
+  }
+  Type playback_type = 1;
+  string url = 2;
+  string tuning_number = 3;
+  string lsdvr_guid = 4;
+  repeated APBindle ap_bindles = 5;
+  string channel_guid = 6;
+  bool allow_prebuffer = 7;
+  bool allow_lookback_seek_past_furthest_position = 8;
+  google.protobuf.Timestamp start_time = 9;
+  google.protobuf.Timestamp end_time = 10;
+  google.protobuf.BoolValue is_live_event = 11;
+  google.protobuf.BoolValue is_time_shiftable = 12;
+  google.protobuf.Int64Value live_playback_delay = 13;
+  google.protobuf.Timestamp rec_end_time = 14;
+  google.protobuf.Timestamp rec_start_time = 15;
+  google.protobuf.StringValue prg_svc_id = 16;
+  google.protobuf.StringValue content_type = 17;
+  google.protobuf.StringValue partner_service_id = 18;
+  string call_sign = 19;
+  google.protobuf.StringValue program_guid = 20;
+  PlaybackInfoAnalytics playbackinfo_analytics = 21;
+  string asset_id = 22;
+  google.protobuf.StringValue rec_guid = 23;
+  string program_type = 24;
+  Image channel_logo = 25;
+}
+
+message PlaybackInfoAnalytics {
+  string asset_title = 1;
+  string content_type = 2;
+  string profile_guid = 3;
+}
+message APBindle {
+  string display_option = 1;
+  string playout_type = 2;
+  google.protobuf.Int32Value position = 3;
+  int32 furthest_position = 4;
+}
+
+message Adobe {
+  reserved 40;
+  reserved "is_subscribed";
+
+  enum AssetType {
+    Show = 0;
+    Movie = 1;
+    Trailer = 2;
+    Episode = 3;
+    Franchise = 4;
+    Channel = 5;
+    AssetTypeHybrid = 6;
+    AssetTypeNone = 7;
+  }
+  enum ButtonType {
+    Asset = 0;
+    Channel_ButtonType = 1;
+    Package = 2;
+    ButtonTypeUnknown = 3;
+  }
+  enum ButtonTypeView {
+    Tile = 0;
+    Grid = 1;
+    ButtonTypeViewUnknown = 2;
+  }
+  enum ContentType {
+    Unknown = 0;
+    Live = 1;
+    LookBack = 2;
+    SVOD = 3;
+    TVOD = 4;
+    DVR = 5;
+    PPV = 6;
+    Upcoming = 7;
+    Expired = 8;
+    Unentitled = 9;
+    Previously_Entitled = 10;
+  }
+  enum AccountStatus {
+    AccountStatusUnknown = 0;
+    Unavailable = 1;
+    Paid = 2;
+    Prospect = 3;
+    Freemium = 4;
+    Lead = 5;
+    Free_Preview = 6;
+    ExpiredAccount = 7;
+  }
+  enum AdobeFieldFormat {
+    Legacy = 0;
+    r20Format = 1;
+  }
+  enum Hubtype {
+    SingleChannel = 0;
+    MultiChannel = 1;
+    HubtypeNone = 2;
+    BaseService = 3;
+  }
+  string container_name = 1;
+  string screen_name = 2; // used as app redesign field also
+  bool clicks = 3;
+  string row_name = 4;
+  string show_id = 5;
+  string asset_name = 6;
+  AssetType asset_type = 7; // used as app redesign field also
+  string asset_genre = 8;
+  string channel_name = 9;
+  ButtonType button_type = 10;
+  ButtonTypeView button_type_view = 11;
+  ContentType content_type = 12;
+  bool select_asset = 13;
+  bool watch_play = 14;
+  bool manage = 15;
+  bool edit_channel = 16;
+  bool my_dvr_click = 17;
+
+  // fields for app redesign
+  string account_guid = 18;
+  string device_guid = 19;
+  AccountStatus account_status = 20;
+  string ribbon_name = 21;
+  string action = 22;
+  string tab_name = 23;
+  string channel = 24;
+  string asset = 25;
+  string asset_guid = 26;
+  string language = 27;
+  string program_guid = 28;
+  AdobeFieldFormat field_format = 29;
+  string hybrid_asset_value = 30;
+  google.protobuf.StringValue tile_source = 31;
+  bytes source_analytics = 32;
+  string profile_guid = 33;
+  google.protobuf.StringValue package_name = 34;
+  google.protobuf.StringValue hub_guid = 35;
+  Hubtype hub_type = 36;
+  google.protobuf.StringValue packages = 37;
+  string DeepLink = 38;
+  string subpack = 39;
+  double pricing = 41;
+  string product_name = 42;
+  string subpack_guid = 43;
+  string menu_name = 44;
+  string link_type = 45;
+  string link_name = 46;
+  string cart_referrer = 47;
+  string cart_category = 48;
+  string recording_info = 49;
+  string sports_info = 50;
+  string product_category = 51;
+  string order_type = 52;
+  string page_name = 53;
+  string search_details = 54;
+  string profile_type = 55;
+  google.protobuf.BoolValue subscribed = 56;
+}
+
+message Icon {
+  enum Type {
+    STATIC = 0;
+    DYNAMIC = 1;
+  }
+  Type type = 1;
+  enum Key {
+    FAVORITE_HEART_FILLED = 0;
+    FAVORITE_HEART_EMPTY = 1;
+    PARENTAL_LOCKED = 2;
+    DVR_RED_DOT = 3;
+    DVR_GRAY_DOT = 4;
+    ROTTEN_TOMATOES = 5;
+    CHANNEL_FAVORITED = 6;
+    RECORD_ACTION = 7;
+    RATING_UNKNOWN = 8;
+    RATING_TV_Y = 9;
+    RATING_TV_G = 10;
+    RATING_G = 11;
+    RATING_TV_PG = 12;
+    RATING_TV_Y7 = 13;
+    RATING_PG = 14;
+    RATING_PG_13 = 15;
+    RATING_TV_14 = 16;
+    RATING_TV_MA = 17;
+    RATING_R = 18;
+    RATING_NC_17 = 19;
+    CONTINUE_WATCHING = 20;
+    LAST_WATCHED_CHANNEL = 21;
+    PICKED_FOR_YOU = 22;
+    PLAY_CONTENT = 23;
+    POPULAR_NOW = 24;
+    RECENTLY_RECORDED = 25;
+    NEW = 26;
+    RECOMMENDED_WATCHLIST = 27;
+    RECENT_RECORDING = 28;
+    RECOMMENDED_PREVIOUS = 29;
+    RECOMMENDED_PICKED = 30;
+    FEATURED = 31;
+    RECOMMENDED_SIMILAR = 32;
+    RECOMMENDED_RECENT = 33;
+    OTA = 34;
+    RECORD_RULE = 35;
+    PLAYER_SCREEN = 36;
+    TOP_CHANNEL_PICK = 37;
+    BULLET_POINT = 38;
+    MULTIPLE_RECORDINGS = 39;
+    SINGLE_RECORDING = 40;
+    REPLAY = 41;
+  }
+  Key key = 2;
+  google.protobuf.StringValue url = 3;
+  google.protobuf.StringValue message = 4;
+}
+
+message Label {
+  enum Type {
+    THUUZ_LOGO = 0;
+  }
+  Type type = 1;
+  google.protobuf.StringValue url = 2;
+}
+
+message Analytics {
+  string query_id = 1;
+  string item_id = 2;
+}
+
+message Member {
+  string userGuid = 1;
+  string groupName = 2;
+  google.protobuf.Timestamp created_at = 3;
+  string platform = 4;
+}
+
+message GetMembersQuery {
+  string groupName = 1;
+}
+
+message ModifyMembersQuery {
+  string groupName = 1;
+  repeated Member members = 2;
+}
+
+message Members {
+  repeated Member members = 1;
+}
+
+message BookmarkRequest {
+  RequestState req_state = 1;
+  string channelId = 2;
+  ContextType context = 3;
+  string franchiseId = 4;
+  string programId = 5;
+}
+
+message BookmarkResponse {
+  string programId = 1;
+  bool unwatched_series = 2;
+  Tile nextTile = 3;
+}
+
+message Thuuz {
+  int32 score = 1;
+  google.protobuf.StringValue label = 2;
+  google.protobuf.StringValue color = 3;
+}
+
+message RequestState {
+  string user_guid = 1;
+  string platform = 2;
+  string device_guid = 3;
+  string session_guid = 4;
+  string client_config = 5;
+  map<string, bool> features = 6;
+  string timezone = 7;
+  string timezone_id = 8;
+  string dma = 9;
+  string finder_id = 10;
+  string lsdvr_volume_id = 11;
+  string client_analytics_id = 12;
+  bool cmw_load_test = 13;
+  string profile_guid = 14;
+  map<string, string> experiment_groups = 15;
+  string player_version = 16;
+  string response_config = 17;
+  string device_model = 18;
+  string client_version = 19;
+}
+
+enum ContextType {
+  ALL = 0;
+  DVR = 1;
+  CHANNEL = 2;
+}
+
+message DetailViewRequest {
+  RequestState req_state = 1;
+  string restricted_to_channel_id = 2;
+  google.protobuf.Timestamp time = 3;
+  bool verboseLogging = 4;
+  ContextType context = 5;
+  string content_guid = 6;
+  string content_type = 7;
+}
+
+message DetailScreenQuery {
+  DetailScreenType type = 1;
+  string id = 2;
+  RequestState req_state = 3;
+}
+
+enum Position {
+  BOTTOM_LEFT = 0;
+  BOTTOM_RIGHT = 1;
+  TOP_LEFT = 2;
+  TOP_RIGHT = 3;
+  BOTTOM_CENTER = 4;
+  CLIENT_CONTROLLED = 5;
+}
+
+message BadgeLabel {
+  enum Type {
+    COUNTDOWN = 0;
+    STRING = 1;
+  }
+  google.protobuf.Duration date_value = 1;
+  string str_value = 2;
+  Type label = 3;
+  google.protobuf.Duration dur_value = 4;
+}
+
+message Badge {
+  enum Type {
+    SPECIFIC = 0;
+    GENERIC = 1;
+  }
+  Type badge_type = 1;
+  enum Key {
+    LIVE = 0;
+    PURCHASE_REQUIRED = 1;
+    RECORDING = 2;
+    SLING_BLUE = 3;
+    SLING_ORANGE = 4;
+    SCHEDULED = 5;
+    LOCKED = 6;
+    AD_FREE = 7;
+    SCHEDULED_SPORTS = 8;
+  }
+  Key key = 2;
+  enum Color {
+    DARK_BLUE = 0;
+    DARK_COAL = 1;
+    LIGHT_BLUE = 2;
+    LIGHT_COAL = 3;
+    BLACK = 4;
+    TRANSPARENT = 5;
+    LIGHT_GREEN = 6;
+  }
+  Color color = 3;
+  Position position = 4;
+  BadgeLabel label = 5;
+  string shape = 6;
+}
+
+message ChannelLogoDetails {
+  Image image = 1;
+  Position position = 2;
+}
+
+message SourceTypeDetails {
+  Image image = 1;
+  Position position = 2;
+}
+
+// R20 DVR API components
+
+message EmptyInfo {
+  string description = 1;
+  string title = 2;
+}
+
+message RecordingStatus {
+  google.protobuf.StringValue instruction = 1;
+  Storage lsdvr_storage = 2;
+  Storage rsdvr_storage = 3;
+}
+
+message DvrStatus {
+  enum Format {
+    DVR_STATUS = 0;
+  }
+  Storage storage = 1;
+  Format format = 2;
+  string instruction = 3;
+}
+
+message SubscriptionInfo {
+  enum Format {
+    SUBSCRIPTION = 0;
+  }
+  string description = 1;
+  Format format = 2;
+  string subtitle = 3;
+  string title = 4;
+}
+
+message DeviceInfo {
+  enum Format {
+    DEVICE = 0;
+  }
+  string title = 1;
+  Format format = 2;
+}
+
+message Storage {
+  enum Format {
+    LSDVR = 0;
+    RSDVR = 1;
+  }
+  string label = 1;
+  int32 threshold = 2;
+  string title = 3;
+  Format format = 4;
+  google.protobuf.FloatValue total_hours = 5;
+  google.protobuf.FloatValue used_hours = 6;
+  google.protobuf.StringValue instruction = 7;
+  repeated ProfileStorageStatus profile_statuses = 8;
+}
+
+message ProfileStorageStatus {
+  string profile_guid = 1;
+  float used_hours = 2;
+  string label = 3;
+}
+
+message LsdvrVolumeState {
+  enum Format {
+    DVR_STATUS = 0;
+    DISCONNECTED = 1;
+  }
+  Storage storage = 1;
+  Format format = 2;
+  google.protobuf.StringValue instruction = 3;
+  google.protobuf.StringValue description = 4;
+  google.protobuf.StringValue title = 5;
+}
+
+message FocusActionHint {
+  string label = 1;
+  ActionTypeValue action_type = 2;
+}
+
+message OTARecordingInfo {
+  google.protobuf.StringValue airing_guid = 1;
+  google.protobuf.StringValue channel_guid = 2;
+  google.protobuf.StringValue franchise_guid = 3;
+  google.protobuf.StringValue lsdvr_volume_id = 4;
+  google.protobuf.StringValue recording_id = 5;
+  google.protobuf.StringValue rule_guid = 6;
+}
+
+message RecordOptionsScreen {
+  string label = 1;
+  Icon icon = 2;
+  repeated ActionTypeValue action_sequence = 3;
+  map<string, Action> actions = 4;
+  ActionTypeValue selected_action = 5;
+  repeated Attribute primary_attributes = 6;
+  repeated Attribute secondary_attributes = 7;
+  google.protobuf.StringValue description = 8;
+  Image image = 9;
+  google.protobuf.StringValue title = 10;
+}
+
+message MoreActionsScreen {
+  enum Position {
+    Overlay = 0;
+    Regular = 1;
+  }
+  string title = 1;
+  google.protobuf.StringValue subtitle = 2;
+  repeated ActionTypeValue action_sequence = 3;
+  map<string, Action> actions = 4;
+  Position position = 5;
+}
+
+message ToastInfo {
+  string title = 1;
+  google.protobuf.StringValue subtitle = 2;
+  Image image = 3;
+}
+
+message PlaybackOptionsScreen {
+  string label = 1;
+  google.protobuf.StringValue title = 2;
+  google.protobuf.StringValue description = 3;
+  repeated ActionTypeValue action_sequence = 4;
+  map<string, Action> actions = 5;
+}
+
+message SpecialHref {
+  string route = 1;
+  string name = 2;
+  google.protobuf.BoolValue is_selected = 3;
+  Action persist_action = 4;
+}
+
+message SpecialHrefList {
+  enum Type {
+    FILTERS = 0;
+  }
+  Type href_type = 1;
+  repeated SpecialHref special_hrefs = 2;
+  string title = 3;
+}
+
+message SportsScoresData {
+  string game_id = 1;
+  TeamDetails away_team = 2;
+  TeamDetails home_team = 3;
+  GameStatus status = 4;
+  repeated string attributes = 5;
+}
+
+message TeamDetails {
+  string display_name = 1;
+  string display_name_full = 2;
+  Image logo_url = 3;
+  google.protobuf.Int64Value seed = 4;
+  string color = 5;
+  int32 wins = 6;
+  int32 losses = 7;
+}
+
+message GameStatus {
+  TeamScore away_score = 1;
+  TeamScore home_score = 2;
+  int64 expires_at = 3;
+  string href = 4;
+  string state = 5;
+}
+
+message TeamScore {
+  string type = 1;
+  string value = 2;
+}
+
+message LgPreviewRibbon {
+  int32 skip_interval = 1;
+  string pub_date = 2;
+  repeated LgPreviewTile item_list = 3;
+}
+
+message LgPreviewTile {
+  google.protobuf.StringValue deeplinkId = 1;
+  string type = 2;
+  string title = 3;
+  string category = 4;
+  Image image = 5;
+  Image image_4k = 6;
+}

@@ -1,0 +1,249 @@
+syntax = "proto3";
+
+package msg;
+
+option go_package = "./proto";
+
+import "google/protobuf/empty.proto";
+
+// Transaction is the primary financial and network transaction type. This is used by the NeMo network as a generic
+// transaction type but will typically be used for financial messages.
+message Transaction {
+  // message is the raw incoming or outgoing message.
+  bytes message = 1;
+
+  // message_source_name is the original source system of the transaction.
+  string message_source_name = 2;
+
+  // uutid is a list of applicable unique transaction ids.
+  repeated string uutid = 3;
+
+  // source_service_name is name of the sending service.
+  string source_service_name = 4;
+
+  // client_profile_identifier is used to attach a client id with the transaction.
+  string client_profile_identifier = 5;
+
+  // port_number is the originating port this transaction arrived on, used for TCP based transactions.
+  uint32 port_number = 6;
+
+  // session_identifier is used to specify the arriving session id for either TCP or HTTP transactions.
+  string session_identifier = 7;
+
+  // message_specification_format_name will specify the expected message format for this transaction.
+  string message_specification_format_name = 8;
+
+  // proxy_availability_zone will include the originating proxy's availability zone.
+  string proxy_availability_zone = 9;
+
+  // event_timestamp will be the originating transaction arrival timestamp. This value is overwritten with request time
+  // when processing responses.
+  uint64 event_timestamp = 10;
+
+  // embedded_header_length is the length of the embedded header within the raw transaction (if included).
+  uint32 embedded_header_length = 11;
+
+  // http_header_text is a map of HTTP headers and their values.
+  map<string, string> http_header_text = 12;
+
+  // proxy_fqdn_text is the full host and domain name for the originating proxy.
+  string proxy_fqdn_text = 13;
+
+  // flight_key is a unique key that is used to lookup saved in-flight transactions upon reply.
+  string flight_key = 14;
+
+  // bounce_count is a counter that is increased every time the message is bounced back. This is used to prevent
+  // messages with no route from continuously being bounced from network instance to network instance.
+  uint32 bounce_count=15;
+
+  // target is the routing target service to route this transaction to.
+  string target = 16;
+
+  // status is a message status field used to communicate system status from service to service.
+  string status = 17;
+
+  // message_type is a convenience field which specifies the message type. This may not always be populated.
+  string message_type = 18;
+
+  // breadcrumbs is a map of service names/steps and timestamps. This is used for metrics and troubleshooting, as it
+  // contains timestamps of the transaction life-cycle.
+  map<string, uint64> breadcrumbs = 19;
+
+  // processing_availability_zone will specify the availability zone used to process this transaction. This may or may
+  // not be different than the proxy availability zone.
+  string processing_availability_zone = 20;
+
+  // source_client_profile_identifier is the original source client id.
+  string source_client_profile_identifier = 21;
+
+  // port_unique_prefix_text is the unique client id prefix based on port information
+  string port_unique_prefix_text = 22;
+
+  // target_profile_unique_prefix is the unique prefix of the target client based on port information
+  string target_profile_unique_prefix = 23;
+
+  // workflow_indicator will specify the old/new workflow to be used for processing an issuer response
+  string workflow_indicator = 24;
+}
+
+message Data {
+  int32 code = 1;
+  map<string, string> mapped_data = 2;
+}
+
+message Status {
+  int32 status_code = 1;
+  string status_description = 2;
+}
+
+message CSMEvent{
+  string event=1;
+  Transaction txn=2;
+}
+
+// Core Router Streaming Service
+service Switch {
+  rpc Route(stream Transaction) returns (google.protobuf.Empty);
+  rpc Command(Data) returns (Status);
+  rpc Lookup(Data) returns (Data);
+}
+
+// Proxy Service Definitions
+service Proxy_1 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_2 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_3 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_4 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_5 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_6 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_7 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_8 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_9 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_10 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_11 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_12 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_13 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_14 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_15 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service Proxy_16 {
+   rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+// Proxy is a generic proxy service. This will be exposed by all the proxies
+// and will be used by core-router (envoy) for sending unsolicited messages (leader selection for example)
+service Proxy {
+    // CoreRouterSend processes messages sent by Core-Router
+    rpc CoreRouterSend(Transaction) returns (Data);
+}
+
+// NOS Service Definitions
+service IPC1NOS {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service IPC2NOS {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+// Web-Client Service Definitions
+service WebClient {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+// Web-Proxy Service Definitions
+service WebProxy {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service WebProxy_1 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service WebProxy_2 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service WebProxy_3 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service WebProxy_4 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service WebProxy_5 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service WebProxy_6 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service WebProxy_7 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service WebProxy_8 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service WebProxy_9 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+service WebProxy_10 {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+}
+
+//  Core-Router Service Definitions
+service CoreRouter {
+  rpc Send(Transaction) returns (google.protobuf.Empty);
+  rpc NosSend(Transaction) returns (google.protobuf.Empty);
+  rpc ProxySend(Transaction) returns (google.protobuf.Empty);
+  rpc ProcessMsgFromRemote(Transaction) returns (google.protobuf.Empty);
+  rpc ProcessRemoteCSMEvent (CSMEvent) returns (google.protobuf.Empty);
+}
