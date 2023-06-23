@@ -6,6 +6,7 @@ option go_package = "./proto";
 
 service CalculatorService {
   rpc Add(AddRequest) returns (AddResponse) {}
+  rpc Subtract(SubtractRequest) returns (SubtractResponse) {}
 }
 
 message AddRequest {
@@ -17,4 +18,12 @@ message AddResponse {
   int32 result = 1;
 }
 
+message SubtractRequest {
+  int32 num1 = 1;
+  int32 num2 = 2;
+}
+
+message SubtractResponse {
+  int32 result = 1;
+}
 

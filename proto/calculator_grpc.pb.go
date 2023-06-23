@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	CalculatorService_Add_FullMethodName = "/msg.CalculatorService/Add"
+	CalculatorService_Add_FullMethodName      = "/msg.CalculatorService/Add"
+	CalculatorService_Subtract_FullMethodName = "/msg.CalculatorService/Subtract"
 )
 
 // CalculatorServiceClient is the client API for CalculatorService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CalculatorServiceClient interface {
 	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*AddResponse, error)
+	Subtract(ctx context.Context, in *SubtractRequest, opts ...grpc.CallOption) (*SubtractResponse, error)
 }
 
 type calculatorServiceClient struct {
@@ -46,11 +48,21 @@ func (c *calculatorServiceClient) Add(ctx context.Context, in *AddRequest, opts 
 	return out, nil
 }
 
+func (c *calculatorServiceClient) Subtract(ctx context.Context, in *SubtractRequest, opts ...grpc.CallOption) (*SubtractResponse, error) {
+	out := new(SubtractResponse)
+	err := c.cc.Invoke(ctx, CalculatorService_Subtract_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CalculatorServiceServer is the server API for CalculatorService service.
 // All implementations must embed UnimplementedCalculatorServiceServer
 // for forward compatibility
 type CalculatorServiceServer interface {
 	Add(context.Context, *AddRequest) (*AddResponse, error)
+	Subtract(context.Context, *SubtractRequest) (*SubtractResponse, error)
 	mustEmbedUnimplementedCalculatorServiceServer()
 }
 
@@ -60,6 +72,9 @@ type UnimplementedCalculatorServiceServer struct {
 
 func (UnimplementedCalculatorServiceServer) Add(context.Context, *AddRequest) (*AddResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
+}
+func (UnimplementedCalculatorServiceServer) Subtract(context.Context, *SubtractRequest) (*SubtractResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Subtract not implemented")
 }
 func (UnimplementedCalculatorServiceServer) mustEmbedUnimplementedCalculatorServiceServer() {}
 
@@ -92,6 +107,24 @@ func _CalculatorService_Add_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CalculatorService_Subtract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubtractRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CalculatorServiceServer).Subtract(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CalculatorService_Subtract_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CalculatorServiceServer).Subtract(ctx, req.(*SubtractRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CalculatorService_ServiceDesc is the grpc.ServiceDesc for CalculatorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +135,10 @@ var CalculatorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Add",
 			Handler:    _CalculatorService_Add_Handler,
+		},
+		{
+			MethodName: "Subtract",
+			Handler:    _CalculatorService_Subtract_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
