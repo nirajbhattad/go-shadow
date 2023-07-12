@@ -43,13 +43,4 @@ func (s ShadowServer) Send(ctx context.Context, req *pb.Transaction) (*emptypb.E
 	return nil, status.Errorf(codes.Unimplemented, "method Send not implemented")
 }
 
-// CalculatorServer implements the CalculatorService server
-type CalculatorServer struct {
-	pb.UnimplementedCalculatorServiceServer
-}
 
-// Add implements the Add RPC method
-func (s CalculatorServer) Add(ctx context.Context, req *pb.AddRequest) (*pb.AddResponse, error) {
-	result := req.Num1 + req.Num2
-	return &pb.AddResponse{Result: result}, nil
-}
