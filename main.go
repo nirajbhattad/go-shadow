@@ -40,7 +40,24 @@ type ShadowServer struct {
 }
 
 func (s ShadowServer) Send(ctx context.Context, req *pb.Transaction) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Send not implemented")
+	message := req.GetMessage()
+	ipAddress := "localhost" // Replace with the specific IP address from the config
+	port := int(req.GetPortNumber())
+
+	// establish socket connection
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ipAddress, port))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "Failed to establish socket connection")
+	}
+	defer conn.Close()
+
+	// send message over socket connection
+	_, err = conn.Write(message)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "Failed to send raw message")
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 
