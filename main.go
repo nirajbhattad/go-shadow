@@ -57,6 +57,14 @@ func (s ShadowServer) Send(ctx context.Context, req *pb.Transaction) (*emptypb.E
 		return nil, status.Errorf(codes.Internal, "Failed to send raw message")
 	}
 
+	buffer := make([]byte, 1024)
+	bytesRead, err := conn.Read(buffer)
+	if err != nil {
+		fmt.Println("Error reading response:", err.Error())
+	}
+	response := string(buffer[:bytesRead])
+	fmt.Println("Response from server:", response)
+
 	return &emptypb.Empty{}, nil
 }
 
