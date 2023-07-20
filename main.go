@@ -18,7 +18,7 @@ func main() {
 	var shadowServer ShadowServer
 
 	// Create a listener on TCP port 5001
-	lis, err := net.Listen("tcp", ":5001")
+	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
